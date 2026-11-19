@@ -61,7 +61,8 @@
         position: relative;
         border-radius: 50%;
         background:
-          repeating-radial-gradient(circle at 50% 50%, #101318 0 2px, #1b1f26 2px 3px, #0a0c10 3px 5px);
+          repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 4px, rgba(190, 215, 255, 0.20) 4px 5px, rgba(255, 255, 255, 0) 5px 9px),
+          repeating-radial-gradient(circle at 50% 50%, #101318 0 2px, #232833 2px 3px, #0a0c10 3px 5px);
         border: 3px solid var(--blue);
         box-shadow:
           0 0 0 6px rgba(30, 155, 255, 0.12),
@@ -508,17 +509,17 @@
         <div class="rounds-list">
           <div class="round-row">
             <div class="rn">1</div>
-            <div class="rt"><b>Side A</b><span>Easy &middot; the ones everybody knows</span></div>
+            <div class="rt"><b>Drop the Needle &middot; Round 1</b><span>Side A &middot; Easy &middot; the ones everybody knows</span></div>
             <div class="mult">&times;1</div>
           </div>
           <div class="round-row">
             <div class="rn">2</div>
-            <div class="rt"><b>Deep Cuts</b><span>Medium &middot; for the real fans</span></div>
+            <div class="rt"><b>Drop the Needle &middot; Round 2</b><span>Deep Cuts &middot; Medium &middot; for the real fans</span></div>
             <div class="mult">&times;1.5</div>
           </div>
           <div class="round-row">
             <div class="rn">3</div>
-            <div class="rt"><b>Studio Session</b><span>Hard &middot; deep knowledge only</span></div>
+            <div class="rt"><b>Drop the Needle &middot; Round 3</b><span>Studio Session &middot; Hard &middot; deep knowledge only</span></div>
             <div class="mult">&times;2</div>
           </div>
         </div>
@@ -607,7 +608,7 @@
           <p class="section-sub" id="break-next-sub" style="margin-bottom: 0;">Round 2 &middot; Medium &middot; points now worth &times;1.5</p>
         </div>
         <div class="btn-row">
-          <button class="btn" id="btn-next-round" type="button">Drop the needle on Round 2</button>
+          <button class="btn" id="btn-next-round" type="button">Drop the Needle on Round 2</button>
         </div>
       </section>
 
@@ -1078,10 +1079,10 @@
           $("break-detail").textContent =
             state.roundCorrect[state.round] + " of " + nightQs().length + " correct that round · " +
             state.score + " points so far";
-          $("break-next-title").textContent = "Next up: " + upcoming.name;
+          $("break-next-title").textContent = "Next up: Drop the Needle \u00b7 Round " + (state.round + 2) + " \u2014 " + upcoming.name;
           $("break-next-sub").textContent =
             "Round " + (state.round + 2) + " · " + upcoming.diff + " · points now worth " + upcoming.multLabel;
-          $("btn-next-round").textContent = "Drop the needle on Round " + (state.round + 2);
+          $("btn-next-round").textContent = "Drop the Needle on Round " + (state.round + 2);
           show("screen-break");
         }
 
