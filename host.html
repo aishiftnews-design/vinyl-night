@@ -92,7 +92,7 @@
       .title-pick.on { background: linear-gradient(180deg, var(--blue-bright), var(--blue) 55%, var(--blue-deep)); border-color: var(--blue-bright); color: #fff; }
       .prize-row { display: flex; gap: 12px; margin-top: 14px; }
       .prize { flex: 1; border: 3px solid var(--blue); border-radius: 16px; box-shadow: var(--glow); background: rgba(9,24,44,0.85); padding: 14px 10px; text-align: center; }
-      .prize .p-emoji { font-size: 34px; display: block; margin-bottom: 6px; }
+      .prize .p-photo { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; border: 2px solid var(--blue); margin-bottom: 8px; }
       .prize b { display: block; font-size: 14.5px; }
       .prize span { color: var(--muted); font-size: 13px; font-weight: 700; display: block; margin-top: 3px; line-height: 1.4; }
       .mention-row { display: flex; justify-content: space-between; gap: 10px; padding: 9px 2px; border-bottom: 1px solid rgba(30,155,255,0.25); font-weight: 700; font-size: 15px; }
@@ -401,13 +401,13 @@
             if (silver) {
               var s = document.createElement("div");
               s.className = "prize";
-              s.innerHTML = "<span class='p-emoji'>🪡</span><b>The Silver Needle</b><span>" + esc(silver.name) + " · " + total(silver) + " points</span>";
+              s.innerHTML = "<img class='p-photo' src='silver-needle.jpg' alt='The Silver Needle — a turntable stylus on vinyl' /><b>The Silver Needle</b><span>" + esc(silver.name) + " · " + total(silver) + " points</span>";
               prizes.appendChild(s);
             }
             if (bronze) {
               var b = document.createElement("div");
               b.className = "prize";
-              b.innerHTML = "<span class='p-emoji'>🫏</span><b>The Bronze Donkey</b><span>" + esc(bronze.name) + " · " + total(bronze) + " points</span>";
+              b.innerHTML = "<img class='p-photo' src='bronze-donkey.jpg' alt='The Bronze Donkey Trophy — a bronze donkey statue' /><b>The Bronze Donkey Trophy</b><span>" + esc(bronze.name) + " · " + total(bronze) + " points</span>";
               prizes.appendChild(b);
             }
             body.appendChild(prizes);
