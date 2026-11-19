@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>Gary's Vinyl Night Trivia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #04070d;
+        --bg-2: #071120;
+        --panel: #0a1524;
+        --panel-2: #0d1b30;
+        --blue: #1e9bff;
+        --blue-bright: #57bcff;
+        --blue-deep: #0b5fa5;
+        --ink: #ffffff;
+        --muted: #a9c6e4;
+        --faint: #6f8fb4;
+        --green: #2fbf71;
+        --red: #e5484d;
+        --gold: #f5c542;
+        --glow: 0 0 16px rgba(30, 155, 255, 0.45), 0 0 4px rgba(30, 155, 255, 0.6);
+        --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+        --sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background:
+          radial-gradient(120% 60% at 50% -10%, #0d2f57 0%, rgba(13, 47, 87, 0) 60%),
+          linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 340px);
+        color: var(--ink);
+        font-family: var(--sans);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, input { font-family: inherit; }
+      button { cursor: pointer; }
+
+      .wrap {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: max(20px, env(safe-area-inset-top)) 18px calc(36px + env(safe-area-inset-bottom));
+      }
+      .screen { display: none; }
+      .screen.active { display: block; animation: fadeIn 0.35s ease both; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+      /* ---------- Spinning record ---------- */
+      .record-stage { display: flex; justify-content: center; padding: 10px 0 4px; }
+      .record {
+        position: relative;
+        border-radius: 50%;
+        background:
+          repeating-radial-gradient(circle at 50% 50%, #101318 0 2px, #1b1f26 2px 3px, #0a0c10 3px 5px);
+        border: 3px solid var(--blue);
+        box-shadow:
+          0 0 0 6px rgba(30, 155, 255, 0.12),
+          0 0 34px rgba(30, 155, 255, 0.55),
+          0 18px 40px rgba(0, 0, 0, 0.65),
+          inset 0 0 24px rgba(0, 0, 0, 0.8);
+        animation: spin 5.5s linear infinite;
+        flex: none;
+      }
+      .record::after {
+        content: "";
+        position: absolute; inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(from 210deg, rgba(255,255,255,0) 0deg, rgba(140, 200, 255, 0.14) 24deg, rgba(255,255,255,0) 60deg, rgba(255,255,255,0) 180deg, rgba(140, 200, 255, 0.10) 205deg, rgba(255,255,255,0) 240deg);
+        pointer-events: none;
+      }
+      .record .label {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 38%; height: 38%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 38%, var(--blue-bright) 0%, var(--blue) 55%, var(--blue-deep) 100%);
+        border: 2px solid rgba(255, 255, 255, 0.55);
+        box-shadow: 0 0 12px rgba(30, 155, 255, 0.7), inset 0 0 8px rgba(0, 30, 70, 0.45);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        color: #fff;
+        text-align: center;
+      }
+      .record .label .l-word {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        line-height: 1;
+        text-shadow: 0 1px 3px rgba(0, 25, 60, 0.6);
+      }
+      .record .label .pin {
+        width: 13%; height: 0; padding-top: 13%;
+        border-radius: 50%;
+        background: #eaf6ff;
+        border: 2px solid rgba(4, 30, 60, 0.55);
+        box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      .record-lg { width: 188px; height: 188px; }
+      .record-lg .l-word { font-size: 15px; }
+      .record-sm { width: 84px; height: 84px; animation-duration: 4s; }
+      .record-sm .l-word { font-size: 7px; letter-spacing: 0.1em; }
+      .record-fast { animation-duration: 1.6s; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        .record { animation-duration: 24s; }
+        .screen.active { animation: none; }
+      }
+
+      /* ---------- Type ---------- */
+      .game-title {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(34px, 9vw, 46px);
+        line-height: 1.05;
+        text-align: center;
+        margin: 14px 0 4px;
+      }
+      .game-title .blue { color: var(--blue-bright); }
+      .tagline {
+        text-align: center;
+        color: var(--muted);
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 22px;
+      }
+      .section-title {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 24px;
+        text-align: center;
+        margin: 0 0 6px;
+      }
+      .section-sub {
+        text-align: center;
+        color: var(--muted);
+        font-size: 14.5px;
+        font-weight: 600;
+        margin: 0 0 16px;
+      }
+
+      /* ---------- Pills & panels (thick glowing blue borders) ---------- */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 3px solid var(--blue);
+        border-radius: 999px;
+        box-shadow: var(--glow);
+        background: rgba(10, 30, 55, 0.65);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 13.5px;
+        padding: 8px 14px;
+        letter-spacing: 0.02em;
+      }
+      .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-bright); box-shadow: 0 0 8px var(--blue); flex: none; }
+      .panel {
+        background: linear-gradient(180deg, var(--panel-2), var(--panel));
+        border: 3px solid var(--blue);
+        border-radius: 20px;
+        box-shadow: var(--glow);
+        padding: 20px 18px;
+      }
+
+      .rounds-list { display: flex; flex-direction: column; gap: 12px; margin: 18px 0 22px; }
+      .round-row {
+        display: flex; align-items: center; gap: 14px;
+        border: 3px solid var(--blue);
+        border-radius: 16px;
+        box-shadow: var(--glow);
+        background: rgba(9, 24, 44, 0.8);
+        padding: 13px 16px;
+      }
+      .round-row .rn {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 26px;
+        color: var(--blue-bright);
+        width: 34px; text-align: center; flex: none;
+      }
+      .round-row .rt { flex: 1; min-width: 0; }
+      .round-row .rt b { display: block; font-size: 16.5px; }
+      .round-row .rt span { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+      .round-row .mult {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 19px;
+        color: #fff;
+        flex: none;
+      }
+
+      /* ---------- Name entry ---------- */
+      .name-label {
+        display: block;
+        text-align: center;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 23px;
+        margin-bottom: 12px;
+      }
+      .name-input {
+        width: 100%;
+        min-height: 56px;
+        border: 3px solid var(--blue);
+        border-radius: 14px;
+        box-shadow: var(--glow);
+        background: #ffffff;
+        color: #0a1524;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        padding: 12px 14px;
+        outline: none;
+      }
+      .name-input::placeholder { color: #7d93ad; font-weight: 600; }
+      .name-input:focus { box-shadow: 0 0 22px rgba(30, 155, 255, 0.75), 0 0 5px rgba(30, 155, 255, 0.8); }
+
+      /* ---------- Buttons ---------- */
+      .btn {
+        display: block;
+        width: 100%;
+        min-height: 58px;
+        border-radius: 16px;
+        border: 3px solid var(--blue-bright);
+        background: linear-gradient(180deg, var(--blue-bright), var(--blue) 55%, var(--blue-deep));
+        color: #fff;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        box-shadow: 0 0 20px rgba(30, 155, 255, 0.55), 0 8px 20px rgba(0, 0, 0, 0.45);
+        padding: 14px 18px;
+        text-shadow: 0 1px 3px rgba(0, 30, 70, 0.5);
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn-ghost {
+        background: rgba(9, 24, 44, 0.85);
+        border: 3px solid var(--blue);
+        box-shadow: var(--glow);
+        color: var(--ink);
+        text-shadow: none;
+      }
+      .btn-small {
+        width: auto;
+        min-height: 44px;
+        display: inline-block;
+        font-size: 15px;
+        padding: 10px 20px;
+        border-radius: 999px;
+      }
+      .btn-row { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+      .fineprint { text-align: center; color: var(--faint); font-size: 13px; font-weight: 600; margin-top: 14px; line-height: 1.5; }
+
+      /* ---------- Countdown ---------- */
+      .count-num {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(110px, 34vw, 170px);
+        line-height: 1;
+        text-align: center;
+        color: #fff;
+        text-shadow: 0 0 34px rgba(30, 155, 255, 0.85), 0 0 8px rgba(30, 155, 255, 0.9);
+        margin: 8px 0 2px;
+      }
+      .count-num.pop { animation: pop 0.45s ease both; }
+      @keyframes pop { 0% { transform: scale(1.25); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+      .count-label { text-align: center; color: var(--muted); font-weight: 700; font-size: 16px; margin: 0; }
+      .count-name {
+        text-align: center;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 26px;
+        margin: 16px 0 0;
+      }
+      .center-col { text-align: center; }
+      .center-col .btn-small { margin-top: 26px; }
+
+      /* ---------- Quiz ---------- */
+      .quiz-head {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 14px;
+      }
+      .quiz-head .meta { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+      .timer-track {
+        height: 14px;
+        border: 3px solid var(--blue);
+        border-radius: 999px;
+        box-shadow: var(--glow);
+        background: rgba(9, 24, 44, 0.9);
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+      .timer-fill {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--blue-deep), var(--blue), var(--blue-bright));
+        border-radius: 999px;
+        transition: width 0.1s linear;
+      }
+      .timer-fill.low { background: linear-gradient(90deg, #8f1d22, var(--red)); }
+      .timer-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+      .timer-sec { font-family: var(--serif); font-weight: 900; font-size: 24px; }
+      .timer-sec.low { color: var(--red); }
+      .score-live { color: var(--muted); font-weight: 800; font-size: 14.5px; }
+      .score-live b { color: #fff; font-size: 17px; }
+      .streak-live { color: var(--blue-bright); font-weight: 800; font-size: 14.5px; min-height: 20px; }
+
+      .question-card {
+        background: #ffffff;
+        color: #0a1524;
+        border: 3px solid var(--blue);
+        border-radius: 20px;
+        box-shadow: var(--glow);
+        padding: 22px 18px;
+        margin-bottom: 16px;
+      }
+      .question-card .q-kicker {
+        color: var(--blue-deep);
+        font-weight: 800;
+        font-size: 12.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin: 0 0 8px;
+      }
+      .question-card h2 {
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: clamp(21px, 5.6vw, 26px);
+        line-height: 1.25;
+        margin: 0;
+      }
+      .answers { display: flex; flex-direction: column; gap: 12px; }
+      .answer-btn {
+        width: 100%;
+        min-height: 58px;
+        text-align: left;
+        border: 3px solid var(--blue);
+        border-radius: 16px;
+        box-shadow: var(--glow);
+        background: rgba(9, 24, 44, 0.9);
+        color: var(--ink);
+        font-size: 16.5px;
+        font-weight: 700;
+        padding: 13px 16px;
+        display: flex; align-items: center; gap: 12px;
+      }
+      .answer-btn .letter {
+        flex: none;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--blue-bright);
+        color: var(--blue-bright);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 14px;
+      }
+      .answer-btn:disabled { cursor: default; opacity: 1; }
+      .answer-btn.correct {
+        background: var(--green);
+        border-color: #7fe6ae;
+        box-shadow: 0 0 18px rgba(47, 191, 113, 0.65);
+        color: #fff;
+      }
+      .answer-btn.correct .letter { border-color: #fff; color: #fff; }
+      .answer-btn.wrong {
+        background: var(--red);
+        border-color: #ff9d9f;
+        box-shadow: 0 0 18px rgba(229, 72, 77, 0.6);
+        color: #fff;
+      }
+      .answer-btn.wrong .letter { border-color: #fff; color: #fff; }
+      .answer-btn.dim { opacity: 0.45; box-shadow: none; }
+      .feedback {
+        min-height: 30px;
+        text-align: center;
+        font-weight: 800;
+        font-size: 17px;
+        margin-top: 16px;
+      }
+      .feedback.good { color: #4be08a; }
+      .feedback.bad { color: #ff7a7e; }
+
+      /* ---------- Round break ---------- */
+      .break-score {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: 64px;
+        text-align: center;
+        line-height: 1;
+        margin: 6px 0 2px;
+        text-shadow: 0 0 22px rgba(30, 155, 255, 0.6);
+      }
+      .break-sub { text-align: center; color: var(--muted); font-weight: 700; margin: 0 0 4px; }
+
+      /* ---------- Results ---------- */
+      .final-kicker {
+        text-align: center;
+        color: var(--blue-bright);
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin: 10px 0 0;
+      }
+      .final-score {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(64px, 18vw, 88px);
+        line-height: 1;
+        text-align: center;
+        margin: 4px 0 0;
+        text-shadow: 0 0 30px rgba(30, 155, 255, 0.55);
+      }
+      .final-points { text-align: center; color: var(--muted); font-weight: 800; letter-spacing: 0.22em; font-size: 13px; margin: 4px 0 18px; }
+      .best-banner {
+        display: none;
+        text-align: center;
+        background: linear-gradient(180deg, var(--blue-bright), var(--blue-deep));
+        border: 3px solid #bfe6ff;
+        border-radius: 999px;
+        box-shadow: 0 0 20px rgba(30, 155, 255, 0.7);
+        font-weight: 800;
+        font-size: 15.5px;
+        padding: 11px 16px;
+        margin: 0 auto 20px;
+        max-width: 440px;
+      }
+      .best-banner.show { display: block; }
+      .rank-title {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(30px, 8vw, 40px);
+        text-align: center;
+        margin: 0 0 4px;
+      }
+      .rank-line { text-align: center; color: var(--muted); font-weight: 600; font-size: 15.5px; margin: 0 0 22px; line-height: 1.5; }
+      .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+      .stat-box {
+        border: 3px solid var(--blue);
+        border-radius: 16px;
+        box-shadow: var(--glow);
+        background: rgba(9, 24, 44, 0.85);
+        text-align: center;
+        padding: 14px 6px 12px;
+      }
+      .stat-box b { display: block; font-family: var(--serif); font-weight: 900; font-size: 27px; }
+      .stat-box span { color: var(--muted); font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .results-rounds { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+      .result-row {
+        display: flex; align-items: center; gap: 12px;
+        border: 3px solid var(--blue);
+        border-radius: 16px;
+        box-shadow: var(--glow);
+        background: rgba(9, 24, 44, 0.85);
+        padding: 14px 16px;
+      }
+      .result-row .rr-t { flex: 1; min-width: 0; }
+      .result-row .rr-t b { font-family: var(--serif); font-size: 17px; display: block; }
+      .result-row .rr-t span { color: var(--muted); font-size: 13px; font-weight: 700; }
+      .result-row .rr-s { text-align: right; flex: none; }
+      .result-row .rr-s b { font-family: var(--serif); font-size: 21px; color: var(--blue-bright); display: block; }
+      .result-row .rr-s span { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+      .callout {
+        border: 3px solid var(--gold);
+        border-radius: 16px;
+        box-shadow: 0 0 16px rgba(245, 197, 66, 0.4), var(--glow);
+        background: rgba(40, 32, 6, 0.55);
+        padding: 15px 16px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15.5px;
+        line-height: 1.5;
+        margin-top: 18px;
+      }
+      .callout b { color: var(--gold); }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+
+      <!-- ============ HOME ============ -->
+      <section class="screen active" id="screen-home">
+        <div class="record-stage">
+          <div class="record record-lg" aria-hidden="true">
+            <div class="label">
+              <span class="l-word">VINYL</span>
+              <span class="pin"></span>
+              <span class="l-word">NIGHT</span>
+            </div>
+          </div>
+        </div>
+
+        <h1 class="game-title">Gary&rsquo;s<br /><span class="blue">Vinyl Night Trivia</span></h1>
+        <p class="tagline">Three rounds. Each one harder than the last.</p>
+
+        <div class="rounds-list">
+          <div class="round-row">
+            <div class="rn">1</div>
+            <div class="rt"><b>Side A</b><span>Easy &middot; the ones everybody knows</span></div>
+            <div class="mult">&times;1</div>
+          </div>
+          <div class="round-row">
+            <div class="rn">2</div>
+            <div class="rt"><b>Deep Cuts</b><span>Medium &middot; for the real fans</span></div>
+            <div class="mult">&times;1.5</div>
+          </div>
+          <div class="round-row">
+            <div class="rn">3</div>
+            <div class="rt"><b>Studio Session</b><span>Hard &middot; deep knowledge only</span></div>
+            <div class="mult">&times;2</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <label class="name-label" for="player-name">Who&rsquo;s playing tonight?</label>
+          <input class="name-input" id="player-name" type="text" autocomplete="off" autocapitalize="words"
+                 maxlength="24" placeholder="Type your name" enterkeyhint="go" />
+          <p class="section-sub" style="margin: 14px 0 0;">15 questions &middot; 15 seconds each &middot; faster answers earn bonus points</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" id="btn-start" type="button">Start the night</button>
+        </div>
+        <p class="fineprint">When everyone&rsquo;s ready, hit start together &mdash;<br />there&rsquo;s a 10-second countdown before Round 1.</p>
+      </section>
+
+      <!-- ============ COUNTDOWN ============ -->
+      <section class="screen" id="screen-countdown">
+        <div class="record-stage">
+          <div class="record record-lg record-fast" aria-hidden="true">
+            <div class="label">
+              <span class="l-word">VINYL</span>
+              <span class="pin"></span>
+              <span class="l-word">NIGHT</span>
+            </div>
+          </div>
+        </div>
+        <p class="count-name" id="count-name">Get ready</p>
+        <div class="count-num" id="count-num">10</div>
+        <p class="count-label">Round 1 &middot; Side A &middot; Easy</p>
+        <div class="center-col">
+          <button class="btn btn-ghost btn-small" id="btn-skip-count" type="button">Skip countdown</button>
+        </div>
+      </section>
+
+      <!-- ============ QUIZ ============ -->
+      <section class="screen" id="screen-quiz">
+        <div class="quiz-head">
+          <div class="record record-sm" aria-hidden="true">
+            <div class="label">
+              <span class="l-word">VINYL</span>
+              <span class="pin"></span>
+              <span class="l-word">NIGHT</span>
+            </div>
+          </div>
+          <div class="meta">
+            <span class="pill"><span class="dot"></span><span id="pill-round">Round 1 &middot; Side A</span></span>
+            <span class="pill" id="pill-q">Question 1 of 5</span>
+          </div>
+        </div>
+
+        <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+        <div class="timer-row">
+          <div class="timer-sec" id="timer-sec">15</div>
+          <div class="streak-live" id="streak-live"></div>
+          <div class="score-live">Score <b id="score-live">0</b></div>
+        </div>
+
+        <div class="question-card">
+          <p class="q-kicker" id="q-kicker">Round 1 &middot; Easy &middot; &times;1 points</p>
+          <h2 id="q-text"></h2>
+        </div>
+
+        <div class="answers" id="answers"></div>
+        <p class="feedback" id="feedback" aria-live="polite"></p>
+      </section>
+
+      <!-- ============ ROUND BREAK ============ -->
+      <section class="screen" id="screen-break">
+        <div class="record-stage">
+          <div class="record record-lg" aria-hidden="true">
+            <div class="label">
+              <span class="l-word">VINYL</span>
+              <span class="pin"></span>
+              <span class="l-word">NIGHT</span>
+            </div>
+          </div>
+        </div>
+        <p class="final-kicker" id="break-kicker">Round 1 complete</p>
+        <div class="break-score" id="break-score">0</div>
+        <p class="break-sub" id="break-detail">points so far</p>
+        <div class="panel" style="margin-top: 18px;">
+          <p class="section-title" id="break-next-title">Next up: Deep Cuts</p>
+          <p class="section-sub" id="break-next-sub" style="margin-bottom: 0;">Round 2 &middot; Medium &middot; points now worth &times;1.5</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="btn-next-round" type="button">Drop the needle on Round 2</button>
+        </div>
+      </section>
+
+      <!-- ============ RESULTS ============ -->
+      <section class="screen" id="screen-results">
+        <div class="record-stage">
+          <div class="record record-lg" aria-hidden="true">
+            <div class="label">
+              <span class="l-word">VINYL</span>
+              <span class="pin"></span>
+              <span class="l-word">NIGHT</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="final-kicker">Final score &middot; Progressive Night</p>
+        <div class="final-score" id="final-score">0</div>
+        <p class="final-points">POINTS</p>
+
+        <div class="best-banner" id="best-banner">New personal best for a full night!</div>
+
+        <h2 class="rank-title" id="rank-title">Headliner</h2>
+        <p class="rank-line" id="rank-line"></p>
+
+        <div class="stats-row">
+          <div class="stat-box"><b id="stat-correct">0/15</b><span>Correct</span></div>
+          <div class="stat-box"><b id="stat-streak">0</b><span>Best streak</span></div>
+          <div class="stat-box"><b id="stat-acc">0%</b><span>Accuracy</span></div>
+        </div>
+
+        <h3 class="section-title" style="text-align: left; margin-bottom: 12px;">Round by round</h3>
+        <div class="results-rounds" id="results-rounds"></div>
+
+        <div class="callout" id="callout"></div>
+
+        <div class="btn-row">
+          <button class="btn" id="btn-again" type="button">Play it again</button>
+          <button class="btn btn-ghost" id="btn-top" type="button">Back to the top</button>
+        </div>
+      </section>
+
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var ROUNDS = [
+          {
+            name: "Side A", diff: "Easy", mult: 1, multLabel: "×1",
+            questions: [
+              { q: "Which band released the album “Abbey Road”?",
+                a: ["The Beatles", "The Rolling Stones", "Pink Floyd", "Led Zeppelin"], c: 0 },
+              { q: "At what speed does a standard LP record spin?",
+                a: ["45 RPM", "33⅓ RPM", "78 RPM", "16 RPM"], c: 1 },
+              { q: "Who is known as the “King of Rock and Roll”?",
+                a: ["Chuck Berry", "Buddy Holly", "Elvis Presley", "Jerry Lee Lewis"], c: 2 },
+              { q: "“Hotel California” is a song by which band?",
+                a: ["Fleetwood Mac", "The Doors", "Creedence Clearwater Revival", "Eagles"], c: 3 },
+              { q: "What is the needle that plays a vinyl record called?",
+                a: ["The stylus", "The spindle", "The platter", "The tonearm"], c: 0 }
+            ]
+          },
+          {
+            name: "Deep Cuts", diff: "Medium", mult: 1.5, multLabel: "×1.5",
+            questions: [
+              { q: "Queen’s “Bohemian Rhapsody” first appeared on which album?",
+                a: ["News of the World", "A Night at the Opera", "A Day at the Races", "Sheer Heart Attack"], c: 1 },
+              { q: "Pink Floyd’s “The Dark Side of the Moon” was released in which year?",
+                a: ["1969", "1975", "1973", "1979"], c: 2 },
+              { q: "Who wrote the song “Hallelujah”?",
+                a: ["Bob Dylan", "Jeff Buckley", "John Cale", "Leonard Cohen"], c: 3 },
+              { q: "Which guitarist is nicknamed “Slowhand”?",
+                a: ["Eric Clapton", "Jimmy Page", "David Gilmour", "Mark Knopfler"], c: 0 },
+              { q: "The album “Rumours” — one of the best-selling records ever — is by which band?",
+                a: ["Eagles", "ABBA", "Fleetwood Mac", "Boston"], c: 2 }
+            ]
+          },
+          {
+            name: "Studio Session", diff: "Hard", mult: 2, multLabel: "×2",
+            questions: [
+              { q: "Who played the famous guitar solo on Michael Jackson’s “Beat It”?",
+                a: ["Steve Lukather", "Slash", "Eddie Van Halen", "Brian May"], c: 2 },
+              { q: "Which album was the first ever released on compact disc, in 1982?",
+                a: ["“Thriller” — Michael Jackson", "“52nd Street” — Billy Joel", "“Purple Rain” — Prince", "“Born in the U.S.A.” — Bruce Springsteen"], c: 1 },
+              { q: "David Bowie’s alter ego Ziggy Stardust debuted on an album in which year?",
+                a: ["1969", "1975", "1977", "1972"], c: 3 },
+              { q: "Berry Gordy built which legendary Detroit record label?",
+                a: ["Motown", "Stax", "Sun Records", "Atlantic"], c: 0 },
+              { q: "The Beatles’ “White Album” — what is its actual official title?",
+                a: ["The White Album", "Back to Back", "The Beatles", "The Double Album"], c: 2 }
+            ]
+          }
+        ];
+
+        var QUESTION_SECONDS = 15;
+        var LETTERS = ["A", "B", "C", "D"];
+
+        var state = {
+          name: "",
+          round: 0,
+          qIndex: 0,
+          score: 0,
+          correct: 0,
+          streak: 0,
+          bestStreak: 0,
+          roundScores: [0, 0, 0],
+          roundCorrect: [0, 0, 0],
+          timeLeft: QUESTION_SECONDS,
+          timerId: null,
+          countId: null,
+          locked: false,
+          best: 0
+        };
+
+        function $(id) { return document.getElementById(id); }
+        function show(id) {
+          var screens = document.querySelectorAll(".screen");
+          for (var i = 0; i < screens.length; i++) screens[i].classList.remove("active");
+          $(id).classList.add("active");
+          window.scrollTo(0, 0);
+        }
+        function stopTimers() {
+          if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+          if (state.countId) { clearInterval(state.countId); state.countId = null; }
+        }
+        function capitalizeName(str) {
+          if (!str) return str;
+          return str.replace(/(^|[\s\-'’])([a-zà-öø-ÿ])/g, function (m, sep, ch) {
+            return sep + ch.toUpperCase();
+          });
+        }
+
+        /* ---------- Countdown ---------- */
+        function startCountdown() {
+          stopTimers();
+          var rawName = $("player-name").value;
+          var fixedName = capitalizeName(rawName.trim());
+          if (fixedName !== rawName) $("player-name").value = fixedName;
+          state.name = fixedName;
+          $("count-name").textContent = state.name ? "Get ready, " + state.name : "Get ready";
+          show("screen-countdown");
+          var n = 10;
+          var el = $("count-num");
+          el.textContent = n;
+          el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+          state.countId = setInterval(function () {
+            n--;
+            if (n <= 0) {
+              clearInterval(state.countId); state.countId = null;
+              beginGame();
+              return;
+            }
+            el.textContent = n;
+            el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+          }, 1000);
+        }
+
+        /* ---------- Game flow ---------- */
+        function resetGame() {
+          state.round = 0; state.qIndex = 0;
+          state.score = 0; state.correct = 0;
+          state.streak = 0; state.bestStreak = 0;
+          state.roundScores = [0, 0, 0];
+          state.roundCorrect = [0, 0, 0];
+        }
+
+        function beginGame() {
+          resetGame();
+          show("screen-quiz");
+          renderQuestion();
+        }
+
+        function renderQuestion() {
+          var round = ROUNDS[state.round];
+          var item = round.questions[state.qIndex];
+          state.locked = false;
+          state.timeLeft = QUESTION_SECONDS;
+
+          $("pill-round").textContent = "Round " + (state.round + 1) + " · " + round.name;
+          $("pill-q").textContent = "Question " + (state.qIndex + 1) + " of " + round.questions.length;
+          $("q-kicker").textContent = "Round " + (state.round + 1) + " · " + round.diff + " · " + round.multLabel + " points";
+          $("q-text").textContent = item.q;
+          $("score-live").textContent = state.score;
+          $("streak-live").textContent = state.streak >= 2 ? "Streak: " + state.streak + " in a row" : "";
+          $("feedback").textContent = "";
+          $("feedback").className = "feedback";
+
+          var box = $("answers");
+          box.innerHTML = "";
+          item.a.forEach(function (text, i) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "answer-btn";
+            var letter = document.createElement("span");
+            letter.className = "letter";
+            letter.textContent = LETTERS[i];
+            btn.appendChild(letter);
+            btn.appendChild(document.createTextNode(text));
+            btn.addEventListener("click", function () { answer(i, btn); });
+            box.appendChild(btn);
+          });
+
+          updateTimerUI();
+          if (state.timerId) clearInterval(state.timerId);
+          state.timerId = setInterval(function () {
+            state.timeLeft = Math.max(0, state.timeLeft - 0.1);
+            updateTimerUI();
+            if (state.timeLeft <= 0) { timeOut(); }
+          }, 100);
+        }
+
+        function updateTimerUI() {
+          var pct = (state.timeLeft / QUESTION_SECONDS) * 100;
+          $("timer-fill").style.width = pct + "%";
+          var secs = Math.ceil(state.timeLeft);
+          $("timer-sec").textContent = secs;
+          var low = state.timeLeft <= 5;
+          $("timer-fill").classList.toggle("low", low);
+          $("timer-sec").classList.toggle("low", low);
+        }
+
+        function lockAnswers(chosenIdx) {
+          state.locked = true;
+          if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+          var round = ROUNDS[state.round];
+          var correctIdx = round.questions[state.qIndex].c;
+          var btns = $("answers").children;
+          for (var i = 0; i < btns.length; i++) {
+            btns[i].disabled = true;
+            if (i === correctIdx) btns[i].classList.add("correct");
+            else if (i === chosenIdx) btns[i].classList.add("wrong");
+            else btns[i].classList.add("dim");
+          }
+          return correctIdx;
+        }
+
+        function answer(i, btn) {
+          if (state.locked) return;
+          var round = ROUNDS[state.round];
+          var correctIdx = lockAnswers(i);
+          var fb = $("feedback");
+          if (i === correctIdx) {
+            var base = Math.round(100 * round.mult);
+            var bonus = Math.round(50 * (state.timeLeft / QUESTION_SECONDS));
+            var pts = base + bonus;
+            state.score += pts;
+            state.roundScores[state.round] += pts;
+            state.correct++;
+            state.roundCorrect[state.round]++;
+            state.streak++;
+            if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+            fb.textContent = "Correct! +" + pts + " points";
+            fb.className = "feedback good";
+          } else {
+            state.streak = 0;
+            fb.textContent = "Not quite — the answer was " + round.questions[state.qIndex].a[correctIdx] + ".";
+            fb.className = "feedback bad";
+          }
+          $("score-live").textContent = state.score;
+          setTimeout(next, 1700);
+        }
+
+        function timeOut() {
+          if (state.locked) return;
+          var round = ROUNDS[state.round];
+          lockAnswers(-1);
+          state.streak = 0;
+          var fb = $("feedback");
+          fb.textContent = "Time’s up — the answer was " + round.questions[state.qIndex].a[round.questions[state.qIndex].c] + ".";
+          fb.className = "feedback bad";
+          setTimeout(next, 1900);
+        }
+
+        function next() {
+          var round = ROUNDS[state.round];
+          if (state.qIndex < round.questions.length - 1) {
+            state.qIndex++;
+            renderQuestion();
+            return;
+          }
+          if (state.round < ROUNDS.length - 1) {
+            showBreak();
+            return;
+          }
+          showResults();
+        }
+
+        function showBreak() {
+          var done = ROUNDS[state.round];
+          var upcoming = ROUNDS[state.round + 1];
+          $("break-kicker").textContent = "Round " + (state.round + 1) + " · " + done.name + " complete";
+          $("break-score").textContent = state.score;
+          $("break-detail").textContent =
+            state.roundCorrect[state.round] + " of " + done.questions.length + " correct that round · " +
+            state.score + " points so far";
+          $("break-next-title").textContent = "Next up: " + upcoming.name;
+          $("break-next-sub").textContent =
+            "Round " + (state.round + 2) + " · " + upcoming.diff + " · points now worth " + upcoming.multLabel;
+          $("btn-next-round").textContent = "Drop the needle on Round " + (state.round + 2);
+          show("screen-break");
+        }
+
+        /* ---------- Results ---------- */
+        function rankFor(acc) {
+          if (acc >= 100) return { t: "Vinyl Royalty", l: "A perfect night. Every single one. Take the crown — you earned it." };
+          if (acc >= 80)  return { t: "Headliner", l: "Strong set. A couple of deep cuts away from a perfect side." };
+          if (acc >= 60)  return { t: "Top of the Charts", l: "Solid night at the turntable. The hits were all there." };
+          if (acc >= 40)  return { t: "Solid Set", l: "A respectable showing — a few scratches on the record, that’s all." };
+          return { t: "Opening Act", l: "Every headliner started somewhere. Spin it again and climb the bill." };
+        }
+
+        function showResults() {
+          stopTimers();
+          var total = 15;
+          var acc = Math.round((state.correct / total) * 100);
+          var rank = rankFor(acc);
+
+          $("final-score").textContent = state.score;
+          var isBest = state.score > state.best && state.best > 0;
+          if (state.score > state.best) state.best = state.score;
+          $("best-banner").classList.toggle("show", isBest);
+          $("rank-title").textContent = rank.t;
+          $("rank-line").textContent = (state.name ? "Nice set, " + state.name + ". " : "") + rank.l;
+          $("stat-correct").textContent = state.correct + "/" + total;
+          $("stat-streak").textContent = state.bestStreak;
+          $("stat-acc").textContent = acc + "%";
+
+          var box = $("results-rounds");
+          box.innerHTML = "";
+          ROUNDS.forEach(function (r, i) {
+            var row = document.createElement("div");
+            row.className = "result-row";
+            var left = document.createElement("div");
+            left.className = "rr-t";
+            var b = document.createElement("b");
+            b.textContent = "Round " + (i + 1) + " · " + r.name;
+            var s = document.createElement("span");
+            s.textContent = r.diff + (i > 0 ? " · " + r.multLabel : "");
+            left.appendChild(b); left.appendChild(s);
+            var right = document.createElement("div");
+            right.className = "rr-s";
+            var sb = document.createElement("b");
+            sb.textContent = state.roundScores[i];
+            var ss = document.createElement("span");
+            ss.textContent = state.roundCorrect[i] + "/5 correct";
+            right.appendChild(sb); right.appendChild(ss);
+            row.appendChild(left); row.appendChild(right);
+            box.appendChild(row);
+          });
+
+          $("callout").innerHTML = "Playing with the group? <b>Call out your score — " +
+            state.score + " points</b> — so the host can put you on the scoreboard for tonight’s crowning.";
+
+          show("screen-results");
+        }
+
+        /* ---------- Wiring ---------- */
+        $("btn-start").addEventListener("click", startCountdown);
+        $("player-name").addEventListener("input", function () {
+          var v = this.value;
+          if (!v) return;
+          var fixed = capitalizeName(v);
+          if (fixed !== v) {
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            this.value = fixed;
+            try { this.setSelectionRange(start, end); } catch (e) {}
+          }
+        });
+        $("player-name").addEventListener("blur", function () {
+          this.value = capitalizeName(this.value.trim());
+        });
+        $("player-name").addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); startCountdown(); }
+        });
+        $("btn-skip-count").addEventListener("click", function () {
+          if (state.countId) { clearInterval(state.countId); state.countId = null; }
+          beginGame();
+        });
+        $("btn-next-round").addEventListener("click", function () {
+          state.round++;
+          state.qIndex = 0;
+          show("screen-quiz");
+          renderQuestion();
+        });
+        $("btn-again").addEventListener("click", startCountdown);
+        $("btn-top").addEventListener("click", function () {
+          stopTimers();
+          show("screen-home");
+        });
+      })();
+    </script>
+  </body>
+</html>
